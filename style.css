@@ -44,6 +44,13 @@
     text-shadow: 0px 0px 3px #000000;
 }
 
+#stage.image-bg a:any-link {
+    color: white;
+    background-color: #00000040;
+    padding: 0 0.5em;
+}
+
+
 p {
     font-size: 2.5rem;
     font-weight: 300;
