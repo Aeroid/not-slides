@@ -4,7 +4,9 @@
 <script src="https://d6uhzlpot4xwe.cloudfront.net/runtime/1.21/themes/wiper-fonts.gz.js"></script>
 <script src="/swiped-events.min.js"></script>
 <script>
-    document.write('<div id="stage"><div id="content"></div></div>');
+
+    document.write('<div id="stage" class="slide"><div id="content" class="slide-content"></div></div>');
+
 
     function next() {
         currentSlide++;
@@ -19,12 +21,9 @@
 
     }
 
-    function goto(slide) {
-        currentSlide=slide;
+    function getSlide(slide) {
         var selector=`main>div:nth-of-type(${slide})`;
         var div=document.querySelector(selector);
-        var stage=document.getElementById("stage");
-        var stageContent=document.getElementById("content");
         var content="";
         var background="";
         var counter=0;
@@ -39,7 +38,33 @@
                 counter++;
             }
         })
-        stageContent.innerHTML = content;
+        return ({content: content, background: background});
+    }
+
+
+    function print() {
+        document.querySelectorAll("main>div").forEach((e, i) => {
+           var slide=getSlide(i+1);
+           var div=document.createElement('DIV'); 
+           div.innerHTML=(`<div class="print slide-content">${slide.content}</div>`);
+           div.className='print slide';
+           if (slide.background) {
+               div.classList.add('image-bg');
+               div.style.backgroundImage = slide.background;
+           } else {
+                div.classList.add('no-image-bg');
+           }
+           document.body.append(div);
+        });
+        document.body.removeChild(document.getElementById("stage"));
+    }
+
+    function goto(slide) {
+        currentSlide=slide;
+        var stage=document.getElementById("stage");
+        var stageContent=document.getElementById("content");
+        var slideContent=getSlide(slide);
+        stageContent.innerHTML = slideContent.content;
 
         var stagger=50;
         stageContent.childNodes.forEach((e) => { 
@@ -49,12 +74,14 @@
                 stagger=+200;
             }
         });
-        if (background) {
-            stage.className="image-bg";
+        if (slideContent.background) {
+            stage.classList.add("image-bg");
+            stage.classList.remove("no-image-bg");
         } else {
-            stage.className="no-image-bg";
+            stage.classList.add("no-image-bg");
+            stage.classList.remove("image-bg");
         }
-        stage.style.backgroundImage = background;
+        stage.style.backgroundImage = slideContent.background;
         [...stageContent.getElementsByTagName('a')].forEach((link) => {
           link.onclick = (e) => {
             e.stopPropagation();
@@ -82,16 +109,21 @@
     }
 
     function init() {
-        totalSlides=document.querySelectorAll("main>div").length;
-        document.body.onkeydown=keys;
-        document.body.onclick=next;
-        document.addEventListener('swiped-up', prev);
-        document.addEventListener('swiped-left', next);
-        document.addEventListener('swiped-right', prev);
-        document.addEventListener('swiped-down', next);
-        hash2slide(window.location.hash, 1);
-        window.onpopstate = function(e) {
-            hash2slide(e.currentTarget.location.hash);
+        if (window.location.hash=="#print") {
+            print();            
+        } else {
+            totalSlides=document.querySelectorAll("main>div").length;
+            document.body.onkeydown=keys;
+            document.body.onclick=next;
+            document.addEventListener('swiped-up', prev);
+            document.addEventListener('swiped-left', next);
+            document.addEventListener('swiped-right', prev);
+            document.addEventListener('swiped-down', next);
+            hash2slide(window.location.hash, 1);
+            window.onpopstate = function(e) {
+                hash2slide(e.currentTarget.location.hash);
+            }
+
         }
     }
     var currentSlide=0;
